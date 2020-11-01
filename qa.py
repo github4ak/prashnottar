@@ -46,7 +46,6 @@ def main(argv):
                 question_id = question_contents[i].split(":")[1].strip()
                 question_text = question_contents[i+1].split(":")[1].strip()
                 question_difficulty = question_contents[i+2].split(":")[1].strip()
-                print(question_text)
                 questions.append(Question(question_id, question_text, question_difficulty))
 
 if __name__ == "__main__":
