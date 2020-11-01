@@ -8,4 +8,4 @@ To run on terminal (in Windows) - `python .\qa.py test_input.txt`
 - Generates two files, 'my_custom_list.response' and 'my_custom_list.answers' in the same folder
 - Copy these two files to the scoring_program folder
 
-To run on termial (from the scoring_program folder) - perl .\score-answers.pl .\my_custom_list.response .\my_custom_list.answers 
+To run on termial (from the scoring_program folder) - `perl .\score-answers.pl .\my_custom_list.response .\my_custom_list.answers`
