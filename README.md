@@ -1,13 +1,15 @@
 # prashnottar
 
+- Moved from Windows (Visual Studio) to Ubuntu (PyCharm), as working with spaCy and NLTK packages in Windows was getting difficult.
+
 - Change the first line of test_input.txt to match your file path to developset-v2 folder
-- Download perl (for Windows) https://www.activestate.com/products/perl/downloads/ (I aslo added a extension for VS Code which was part of the installation process)
 
-To run on terminal (in Windows) - `python .\qa.py test_input.txt`
+- Download stopwords set `python3 -m nltk.downloader stopwords`
+ - Run `python3 qa.py test_input.txt`
+    - Generates two files, 'my_custom_list.response' and 'my_custom_list.answers' in the same folder
+    - Copy these two files to the scoring_program folder
 
-- Generates two files, 'my_custom_list.response' and 'my_custom_list.answers' in the same folder
-- Copy these two files to the scoring_program folder
+ - Run the scoring program (from the scoring_program folder)
+    - `perl score-answers.pl my_custom_list.response my_custom_list.answers`
 
-To run on termial (from the scoring_program folder) - `perl .\score-answers.pl .\my_custom_list.response .\my_custom_list.answers`
-
-- Moved to Ubuntu, as working with spaCy and NLTK packages in windows was getting difficult.
+*We got an average f-measure of 0.1379 with our initial sentence-question word matching algorithm.*
