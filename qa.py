@@ -39,9 +39,9 @@ def get_story_objects(directory_path, input_file_contents):
     temp = []
 
     for i in range(1, len(input_file_contents)):
-        story_file_path = directory_path + "\\" + \
+        story_file_path = directory_path + "/" + \
             str(input_file_contents[i]).rstrip() + ".story"
-        question_file_path = directory_path + "\\" + \
+        question_file_path = directory_path + "/" + \
             str(input_file_contents[i]).rstrip() + ".questions"
         questions = []
         # Create story
@@ -110,7 +110,7 @@ def make_perfect_answer(directory_path, input_file_contents):
     output_file_content = ""
 
     for i in range(1, len(input_file_contents)):
-        answer_file_path = directory_path + "\\" + \
+        answer_file_path = directory_path + "/" + \
             str(input_file_contents[i]).rstrip() + ".answers"
         # Create answers
         with open(answer_file_path, 'r') as a:

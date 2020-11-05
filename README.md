@@ -9,3 +9,5 @@ To run on terminal (in Windows) - `python .\qa.py test_input.txt`
 - Copy these two files to the scoring_program folder
 
 To run on termial (from the scoring_program folder) - `perl .\score-answers.pl .\my_custom_list.response .\my_custom_list.answers`
+
+- Moved to Ubuntu, as working with spaCy and NLTK packages in windows was getting difficult.
