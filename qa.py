@@ -137,7 +137,21 @@ def get_word_match_score_for_sentence(sentence, question_text):
     for word in word_tokenize(question_text):
         question_words.append(word.lower())
 
-    return get_intersection_length(clean_sentence_words, question_words)
+    intersection_len = get_intersection_length(clean_sentence_words, question_words)
+    sentence_len = len(clean_sentence_words)
+
+    match_number = intersection_len/sentence_len
+
+    # Scoring range 3,4 and 6
+    score = 0
+    if match_number > 0.8:
+        score = 6
+    elif match_number > 0.4:
+        score = 4
+    else:
+        score = 3
+
+    return score
 
 
 def get_intersection_length(clean_sentence_words, question_words):
