@@ -154,24 +154,32 @@ def print_formatted_output(stories):
 
 def get_answer(sentences_dict, question_text, question_words, tagged_sentence_dict, tagged_question,
                sentence_score_dict, word_tokens_dict):
-    for key, value in sentences_dict.items():
-        if question_words.__contains__("who"):
+    if question_words.__contains__("who"):
+        for key, value in sentences_dict.items():
             sentence_score_dict[key] += update_score_for_who(value, question_text, question_words,
                                                              tagged_sentence_dict[key], tagged_question)
-        elif question_words.__contains__("what"):
+    elif question_words.__contains__("what"):
+        for key, value in sentences_dict.items():
             sentence_score_dict[key] += update_score_for_what(value, question_text, question_words,
                                                               tagged_sentence_dict[key], tagged_question,
                                                               word_tokens_dict[key])
 
-        elif question_words.__contains__("when"):
+    elif question_words.__contains__("when"):
+        for key, value in sentences_dict.items():
             sentence_score_dict[key] += update_score_for_when(value, question_text, question_words,
                                                               tagged_sentence_dict[key], tagged_question,
                                                               word_tokens_dict[key])
 
-        elif question_words.__contains__("where"):
+    elif question_words.__contains__("where"):
+        for key, value in sentences_dict.items():
             sentence_score_dict[key] += update_score_for_where(value, question_text, question_words,
                                                                tagged_sentence_dict[key], tagged_question,
                                                                word_tokens_dict[key])
+
+    elif question_words.__contains__("why"):
+        sentence_score_dict = update_score_for_why(sentences_dict, sentence_score_dict, question_text, question_words,
+                                                   tagged_sentence_dict, tagged_question,
+                                                   word_tokens_dict)
 
     # Return single line equivalent of multi-line sentence to concur with the scoring system
     return get_most_likely_sentence(sentence_score_dict, sentences_dict)
@@ -184,6 +192,41 @@ def get_most_likely_sentence(sentence_score_dict, sentences_dict):
     # TODO:Need to add tie-breaker logic
 
     return sentences_dict[list(sorted_sentence_score_dict)[0]].replace("\n", " ")
+
+
+def get_best_sentences(sentences_dict, sentence_score_dict):
+    sorted_sentence_score_dict = {k: v for k, v in
+                                  sorted(sentence_score_dict.items(), key=lambda item: item[1], reverse=True)}
+
+    best_word_match_score = list(sorted_sentence_score_dict)[0]
+
+    best_sentence_dict = {}
+
+    for key, value in sentences_dict.items():
+        if value == best_word_match_score:
+            best_sentence_dict[key] = value
+
+    return best_sentence_dict
+
+
+def update_score_for_why(sentences_dict, sentence_score_dict, question_text, question_words, tagged_sentence_dict,
+                         tagged_question, word_tokens_dict):
+    best_sentences_dict = get_best_sentences(sentences_dict, sentence_score_dict)
+
+    for key, value in best_sentences_dict.items():
+        sentence_score_dict[key] += 3
+        prev_s = key - 1
+        next_s = key + 1
+        if prev_s >= 0:
+            sentence_score_dict[prev_s] += 3
+        if next_s < len(best_sentences_dict):
+            sentence_score_dict[next_s] += 3
+        if "want" in value:
+            sentence_score_dict[key] += 4
+        if "so" in value and "because" in value:
+            sentence_score_dict[key] += 4
+
+    return sentence_score_dict
 
 
 def update_score_for_when(value, question_text, question_words, tagged_sentence, tagged_question, word_tokens):
