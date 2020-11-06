@@ -4,6 +4,7 @@ from nltk.corpus import stopwords
 from nltk.corpus import names
 from nltk.tokenize import word_tokenize
 from nltk.tokenize import sent_tokenize
+from nltk.tag import pos_tag
 
 
 class Story:
@@ -73,41 +74,31 @@ def get_story_objects(directory_path, input_file_contents):
     return temp
 
 
-def print_formatted_output(stories):
-    output_filename = "my_custom_list.response"
-
-    # Clear the file
-    open(output_filename, "w").close()
-
-    output_file_content = ""
-
-    for story in stories:
-        for q in story.story_questions:
-            question_id_response = "QuestionID: " + q.question_id
-            print(question_id_response)
-            output_file_content += question_id_response + "\n"
-            answer = get_answer(story.text, q.question_text)
-            answer_response = "Answer: " + answer + "\n"
-            print(answer_response)
-            output_file_content += answer_response + "\n"
-
-    # Write the output
-    with open(output_filename, "a") as f3:
-        f3.write(output_file_content.rstrip())
+def get_sentence_ner(nlp_ner_tagging, sentences_dict):
+    tagged_sentence_dict = {}
+    for key, value in sentences_dict.items():
+        tagged_sentence_dict[key] = nlp_ner_tagging(value)
+    return tagged_sentence_dict
 
 
-def get_answer(story_text, question_text):
-    sentences_dict = get_sentence_tokenized(story_text)
-    max_sentence_index = 0
-    sentence_score_dict = {}
-
-    # Tokenize question text
+def get_question_tokenized(question_text):
     question_words = []
     for word in word_tokenize(question_text):
         question_words.append(word.lower())
+    return question_words
 
+
+def get_word_tokenize(sentences_dict):
+    word_tokens_dict = {}
     for key, value in sentences_dict.items():
-        curr_score = 0
+        word_tokens_dict[key] = word_tokenize(value)
+
+    return word_tokens_dict
+
+
+def get_word_score_for_each_sentence(sentences_dict, question_words):
+    sentence_score_dict = {}
+    for key, value in sentences_dict.items():
         # Remove stop words and tokenize
         stop_words = set(stopwords.words('english'))
         word_tokens = word_tokenize(value)
@@ -118,13 +109,59 @@ def get_answer(story_text, question_text):
         for word in sentence_words:
             if word.isalpha():
                 clean_sentence_words.append(word.lower())
+        sentence_score_dict[key] = get_word_match_score_for_sentence(clean_sentence_words, question_words)
+    return sentence_score_dict
 
-        # Evaluate word-match score
-        curr_score += get_word_match_score_for_sentence(clean_sentence_words, question_words)
 
+def print_formatted_output(stories):
+    output_filename = "scoring_program/my_custom_list.response"
+
+    # Clear the file
+    open(output_filename, "w").close()
+
+    output_file_content = ""
+
+    nlp_ner_tagging = spacy.load("en_core_web_sm")
+
+    for story in stories:
+        # For each story, get tokenized sentence
+        sentences_dict = get_sentence_tokenized(story.text)
+        # Prepare NER tags for each sentence
+        tagged_sentence_dict = get_sentence_ner(nlp_ner_tagging, sentences_dict)
+        #  For each sentence in story, get tokenized words
+        word_tokens_dict = get_word_tokenize(sentences_dict)
+        for q in story.story_questions:
+            question_id_response = "QuestionID: " + q.question_id
+            print(question_id_response)
+            output_file_content += question_id_response + "\n"
+            # Prepare NER tags for the current question
+            tagged_question = nlp_ner_tagging(q.question_text)
+            # Tokenize question sentence
+            question_words = get_question_tokenized(q.question_text)
+            # Get word-match score for each sentence
+            sentence_score_dict = get_word_score_for_each_sentence(sentences_dict, question_words)
+            # Get answer based on question-type
+            answer = get_answer(sentences_dict, q.question_text, question_words, tagged_sentence_dict, tagged_question,
+                                sentence_score_dict, word_tokens_dict)
+            answer_response = "Answer: " + answer + "\n"
+            print(answer_response)
+            output_file_content += answer_response + "\n"
+
+    # Write the output
+    with open(output_filename, "a") as f3:
+        f3.write(output_file_content.rstrip())
+
+
+def get_answer(sentences_dict, question_text, question_words, tagged_sentence_dict, tagged_question,
+               sentence_score_dict, word_tokens_dict):
+    for key, value in sentences_dict.items():
         if question_words.__contains__("who"):
-            curr_score += update_score_for_who(value, question_text, question_words)
-        sentence_score_dict[key] = curr_score
+            sentence_score_dict[key] += update_score_for_who(value, question_text, question_words,
+                                                             tagged_sentence_dict[key], tagged_question)
+        elif question_words.__contains__("what"):
+            sentence_score_dict[key] += update_score_for_what(value, question_text, question_words,
+                                                              tagged_sentence_dict[key], tagged_question,
+                                                              word_tokens_dict[key])
 
     # Return single line equivalent of multi-line sentence to concur with the scoring system
     return get_most_likely_sentence(sentence_score_dict, sentences_dict)
@@ -134,19 +171,58 @@ def get_most_likely_sentence(sentence_score_dict, sentences_dict):
     sorted_sentence_score_dict = {k: v for k, v in
                                   sorted(sentence_score_dict.items(), key=lambda item: item[1], reverse=True)}
 
-    # Need to add tie-breaker logic
+    # TODO:Need to add tie-breaker logic
 
     return sentences_dict[list(sorted_sentence_score_dict)[0]].replace("\n", " ")
 
 
-def update_score_for_who(value, question_text, question_words):
+def update_score_for_what(value, question_text, question_words, tagged_sentence, tagged_question, word_tokens):
+    score = 0
+    s_contains_name = False
+    q_contains_name = False
+    month_list = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october',
+                  'november', 'december']
+
+    if len(set(month_list).intersection(question_words)) != 0 and (
+            value.contains("today") or value.contains("yesterday") or value.contains("tomorrow") or value.contains(
+            "last night")):
+        score += 3
+
+    if question_words.__contains__("kind") and (("call" in value) or ("from" in value)):
+        score += 4
+
+    names_list = get_name_list()
+
+    for tagged_words in tagged_question.ents:
+        if tagged_words.label_ == "PERSON":
+            text = tagged_words.text
+            name_words = text.split(" ")
+            for name in name_words:
+                if name.lower() in names_list:
+                    q_contains_name = True
+                    break
+
+    for tagged_words in tagged_sentence.ents:
+        if tagged_words.label_ == "PERSON":
+            text = tagged_words.text
+            name_words = text.split(" ")
+            for name in name_words:
+                if name.lower() in names_list:
+                    s_contains_name = True
+                    break
+
+    if q_contains_name and (s_contains_name or ("call" in value) or ("known" in value)):
+        score += 20
+
+    # TODO:To build Rule#5: pos_tagged_sentence = pos_tag(word_tokens)
+
+    return score
+
+
+def update_score_for_who(value, question_text, question_words, tagged_sentence, tagged_question):
+    score = 0
     s_contains_person = False
     q_contains_person = False
-    score = 0
-
-    nlp_ner_tagging = spacy.load("en_core_web_sm")
-    tagged_sentence = nlp_ner_tagging(value)
-    tagged_question = nlp_ner_tagging(question_text)
 
     for tagged_words in tagged_sentence.ents:
         if tagged_words.label_ == "PERSON":
@@ -164,9 +240,7 @@ def update_score_for_who(value, question_text, question_words):
     if not q_contains_person and question_words.__contains__("name"):
         score += 4
 
-    names_male_list = [name.lower() for name in names.words('male.txt')]
-    names_female_list = [name.lower() for name in names.words('male.txt')]
-    names_list = names_male_list + names_female_list
+    names_list = get_name_list()
 
     for tagged_words in tagged_sentence.ents:
         if tagged_words.label_ == "PERSON":
@@ -178,6 +252,12 @@ def update_score_for_who(value, question_text, question_words):
                     break
 
     return score
+
+
+def get_name_list():
+    names_male_list = [name.lower() for name in names.words('male.txt')]
+    names_female_list = [name.lower() for name in names.words('male.txt')]
+    return names_male_list + names_female_list
 
 
 def get_sentence_tokenized(story_text):
@@ -215,7 +295,7 @@ def get_intersection_length(clean_sentence_words, question_words):
 
 
 def make_perfect_answer(directory_path, input_file_contents):
-    output_filename = "my_custom_list.answers"
+    output_filename = "scoring_program/my_custom_list.answers"
 
     # Clear the file
     open(output_filename, "w").close()
