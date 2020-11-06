@@ -168,6 +168,11 @@ def get_answer(sentences_dict, question_text, question_words, tagged_sentence_di
                                                               tagged_sentence_dict[key], tagged_question,
                                                               word_tokens_dict[key])
 
+        elif question_words.__contains__("where"):
+            sentence_score_dict[key] += update_score_for_where(value, question_text, question_words,
+                                                               tagged_sentence_dict[key], tagged_question,
+                                                               word_tokens_dict[key])
+
     # Return single line equivalent of multi-line sentence to concur with the scoring system
     return get_most_likely_sentence(sentence_score_dict, sentences_dict)
 
@@ -200,6 +205,19 @@ def update_score_for_when(value, question_text, question_words, tagged_sentence,
     return score
 
 
+def update_score_for_where(value, question_text, question_words, tagged_sentence, tagged_question, word_tokens):
+    score = 0
+
+    # TODO: Rule-1
+
+    for tagged_words in tagged_sentence.ents:
+        if tagged_words.label_ == "GPE" or tagged_words.label_ == "LOC":
+            score += 6
+            break
+
+    return score
+
+
 def update_score_for_what(value, question_text, question_words, tagged_sentence, tagged_question, word_tokens):
     score = 0
     s_contains_name = False
@@ -208,8 +226,7 @@ def update_score_for_what(value, question_text, question_words, tagged_sentence,
                   'november', 'december']
 
     if len(set(month_list).intersection(question_words)) != 0 and (
-            value.contains("today") or value.contains("yesterday") or value.contains("tomorrow") or value.contains(
-        "last night")):
+            ("today" in value) or ("yesterday" in value) or ("tomorrow" in value) or ("last night" in value)):
         score += 3
 
     if question_words.__contains__("kind") and (("call" in value) or ("from" in value)):
@@ -299,10 +316,12 @@ def get_word_match_score_for_sentence(clean_sentence_words, question_words):
     intersection_len = get_intersection_length(clean_sentence_words, question_words)
     sentence_len = len(clean_sentence_words)
 
+    if sentence_len == 0:
+        return 0
+
     match_number = intersection_len / sentence_len
 
     # Scoring range 3,4 and 6
-    score = 0
     if match_number > 0.8:
         score = 6
     elif match_number > 0.4:
