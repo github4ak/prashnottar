@@ -251,7 +251,11 @@ def update_score_for_when(value, question_text, question_words, tagged_sentence,
 def update_score_for_where(value, question_text, question_words, tagged_sentence, tagged_question, word_tokens):
     score = 0
 
-    # TODO: Rule-1
+    pos_tagged_sentence = pos_tag(value)
+
+    for tagged_word in pos_tagged_sentence:
+        if list(tagged_word)[1] == 'P':
+            score += 4
 
     for tagged_words in tagged_sentence.ents:
         if tagged_words.label_ == "GPE" or tagged_words.label_ == "LOC":
@@ -298,7 +302,21 @@ def update_score_for_what(value, question_text, question_words, tagged_sentence,
     if q_contains_name and (s_contains_name or ("call" in value) or ("known" in value)):
         score += 20
 
-    # TODO:To build Rule#5: pos_tagged_sentence = pos_tag(word_tokens)
+    # Rule 5
+    pos_tagged_question = pos_tag(word_tokens)
+    pos_tagged_sentence = pos_tag(value)
+
+    for tagged_words in tagged_question.ents:
+        if tagged_words.label_ == "PERSON":
+            text = tagged_words.text
+            name_words = text.split(" ")
+            for name in name_words:
+                if name.lower() in names_list:
+                    for tagged_word in pos_tagged_question:
+                        if list(tagged_word)[1] == 'PP':
+                            for tag_word in pos_tagged_sentence:
+                                if list(tag_word)[1] == 'NNP':
+                                    score += 20
 
     return score
 
