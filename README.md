@@ -9,8 +9,7 @@
 - Download spaCy's english language model `python3 -m spacy download en_core_web_sm`
 - Download Average perceptron tagger `python3 -m nltk.downloader averaged_perceptron_tagger`
  - Run `python3 qa.py test_input.txt`
-    - Generates two files, 'my_custom_list.response' and 'my_custom_list.answers' in the same folder
-    - Copy these two files to the scoring_program folder
+    - Generates two files, 'my_custom_list.response' and 'my_custom_list.answers' in the scoring_program folder
 
  - Run the scoring program (from the scoring_program folder)
     - `perl score-answers.pl my_custom_list.response my_custom_list.answers`

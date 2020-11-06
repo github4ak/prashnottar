@@ -163,6 +163,11 @@ def get_answer(sentences_dict, question_text, question_words, tagged_sentence_di
                                                               tagged_sentence_dict[key], tagged_question,
                                                               word_tokens_dict[key])
 
+        elif question_words.__contains__("when"):
+            sentence_score_dict[key] += update_score_for_when(value, question_text, question_words,
+                                                              tagged_sentence_dict[key], tagged_question,
+                                                              word_tokens_dict[key])
+
     # Return single line equivalent of multi-line sentence to concur with the scoring system
     return get_most_likely_sentence(sentence_score_dict, sentences_dict)
 
@@ -176,6 +181,25 @@ def get_most_likely_sentence(sentence_score_dict, sentences_dict):
     return sentences_dict[list(sorted_sentence_score_dict)[0]].replace("\n", " ")
 
 
+def update_score_for_when(value, question_text, question_words, tagged_sentence, tagged_question, word_tokens):
+    score = 0
+
+    for tagged_words in tagged_sentence.ents:
+        if tagged_words.label_ in "TIME" or "DATE":
+            score += 6
+            break
+
+    if question_words.__contains__("last") and (
+            ("first" in value) or ("last" in value) or ("since" in value) or ("ago" in value)):
+        score += 20
+
+    if question_words.__contains__("start") or question_words.__contains__("begin"):
+        if ("start" in value) or ("begin" in value) or ("since" in value) or ("year" in value):
+            score += 20
+
+    return score
+
+
 def update_score_for_what(value, question_text, question_words, tagged_sentence, tagged_question, word_tokens):
     score = 0
     s_contains_name = False
@@ -185,7 +209,7 @@ def update_score_for_what(value, question_text, question_words, tagged_sentence,
 
     if len(set(month_list).intersection(question_words)) != 0 and (
             value.contains("today") or value.contains("yesterday") or value.contains("tomorrow") or value.contains(
-            "last night")):
+        "last night")):
         score += 3
 
     if question_words.__contains__("kind") and (("call" in value) or ("from" in value)):
