@@ -1,5 +1,7 @@
 import sys
+import spacy
 from nltk.corpus import stopwords
+from nltk.corpus import names
 from nltk.tokenize import word_tokenize
 from nltk.tokenize import sent_tokenize
 
@@ -97,16 +99,85 @@ def print_formatted_output(stories):
 def get_answer(story_text, question_text):
     sentences_dict = get_sentence_tokenized(story_text)
     max_sentence_index = 0
-    max_score = 0
+    sentence_score_dict = {}
+
+    # Tokenize question text
+    question_words = []
+    for word in word_tokenize(question_text):
+        question_words.append(word.lower())
 
     for key, value in sentences_dict.items():
-        curr_score = get_word_match_score_for_sentence(value, question_text)
-        if curr_score > max_score:
-            max_score = curr_score
-            max_sentence_index = key
+        curr_score = 0
+        # Remove stop words and tokenize
+        stop_words = set(stopwords.words('english'))
+        word_tokens = word_tokenize(value)
+        sentence_words = [w for w in word_tokens if w not in stop_words]
+
+        # Remove non-alphanumeric words
+        clean_sentence_words = []
+        for word in sentence_words:
+            if word.isalpha():
+                clean_sentence_words.append(word.lower())
+
+        # Evaluate word-match score
+        curr_score += get_word_match_score_for_sentence(clean_sentence_words, question_words)
+
+        if question_words.__contains__("who"):
+            curr_score += update_score_for_who(value, question_text, question_words)
+        sentence_score_dict[key] = curr_score
 
     # Return single line equivalent of multi-line sentence to concur with the scoring system
-    return "".join(sentences_dict[max_sentence_index].splitlines())
+    return get_most_likely_sentence(sentence_score_dict, sentences_dict)
+
+
+def get_most_likely_sentence(sentence_score_dict, sentences_dict):
+    sorted_sentence_score_dict = {k: v for k, v in
+                                  sorted(sentence_score_dict.items(), key=lambda item: item[1], reverse=True)}
+
+    # Need to add tie-breaker logic
+
+    return sentences_dict[list(sorted_sentence_score_dict)[0]].replace("\n", " ")
+
+
+def update_score_for_who(value, question_text, question_words):
+    s_contains_person = False
+    q_contains_person = False
+    score = 0
+
+    nlp_ner_tagging = spacy.load("en_core_web_sm")
+    tagged_sentence = nlp_ner_tagging(value)
+    tagged_question = nlp_ner_tagging(question_text)
+
+    for tagged_words in tagged_sentence.ents:
+        if tagged_words.label_ == "PERSON":
+            s_contains_person = True
+            break
+
+    for tagged_words in tagged_question.ents:
+        if tagged_words.label_ == "PERSON":
+            q_contains_person = True
+            break
+
+    if not q_contains_person and s_contains_person:
+        score += 6
+
+    if not q_contains_person and question_words.__contains__("name"):
+        score += 4
+
+    names_male_list = [name.lower() for name in names.words('male.txt')]
+    names_female_list = [name.lower() for name in names.words('male.txt')]
+    names_list = names_male_list + names_female_list
+
+    for tagged_words in tagged_sentence.ents:
+        if tagged_words.label_ == "PERSON":
+            text = tagged_words.text
+            name_words = text.split(" ")
+            for name in name_words:
+                if name.lower() in names_list:
+                    score += 20
+                    break
+
+    return score
 
 
 def get_sentence_tokenized(story_text):
@@ -120,27 +191,11 @@ def get_sentence_tokenized(story_text):
     return sentences_dict
 
 
-def get_word_match_score_for_sentence(sentence, question_text):
-    # Remove stop words and tokenize
-    stop_words = set(stopwords.words('english'))
-    word_tokens = word_tokenize(sentence)
-    sentence_words = [w for w in word_tokens if w not in stop_words]
-
-    # Remove non-alphanumeric words
-    clean_sentence_words = []
-    for word in sentence_words:
-        if word.isalpha():
-            clean_sentence_words.append(word.lower())
-
-    # Tokenize question text
-    question_words = []
-    for word in word_tokenize(question_text):
-        question_words.append(word.lower())
-
+def get_word_match_score_for_sentence(clean_sentence_words, question_words):
     intersection_len = get_intersection_length(clean_sentence_words, question_words)
     sentence_len = len(clean_sentence_words)
 
-    match_number = intersection_len/sentence_len
+    match_number = intersection_len / sentence_len
 
     # Scoring range 3,4 and 6
     score = 0

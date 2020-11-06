@@ -5,6 +5,8 @@
 - Change the first line of test_input.txt to match your file path to developset-v2 folder
 
 - Download stopwords set `python3 -m nltk.downloader stopwords`
+- Download names set `python3 -m nltk.downloader names`
+- Download spaCy's english language model `python3 -m spacy download en_core_web_sm`
  - Run `python3 qa.py test_input.txt`
     - Generates two files, 'my_custom_list.response' and 'my_custom_list.answers' in the same folder
     - Copy these two files to the scoring_program folder
