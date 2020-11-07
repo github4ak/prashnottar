@@ -127,7 +127,7 @@ def print_formatted_output(stories):
         # For each story, get tokenized sentence
         sentences_dict = get_sentence_tokenized(story.text)
         # Prepare NER tags for each sentence
-        tagged_sentence_dict = get_sentence_ner(nlp_ner_tagging, sentences_dict)
+        tagged_sentence_dict = get_sentence_ner(nlp_ner_tagging,sentences_dict)
         #  For each sentence in story, get tokenized words
         word_tokens_dict = get_word_tokenize(sentences_dict)
         for q in story.story_questions:
@@ -142,7 +142,7 @@ def print_formatted_output(stories):
             sentence_score_dict = get_word_score_for_each_sentence(sentences_dict, question_words)
             # Get answer based on question-type
             answer = get_answer(sentences_dict, q.question_text, question_words, tagged_sentence_dict, tagged_question,
-                                sentence_score_dict, word_tokens_dict)
+                                sentence_score_dict, word_tokens_dict, nlp_ner_tagging)
             answer_response = "Answer: " + answer + "\n"
             print(answer_response)
             output_file_content += answer_response + "\n"
@@ -153,46 +153,76 @@ def print_formatted_output(stories):
 
 
 def get_answer(sentences_dict, question_text, question_words, tagged_sentence_dict, tagged_question,
-               sentence_score_dict, word_tokens_dict):
+               sentence_score_dict, word_tokens_dict, nlp_ner_tagging):
+
+    current_question_type =  ""
+
     if question_words.__contains__("who"):
+        current_question_type = "who"
         for key, value in sentences_dict.items():
             sentence_score_dict[key] += update_score_for_who(value, question_text, question_words,
                                                              tagged_sentence_dict[key], tagged_question)
 
     elif question_words.__contains__("what"):
+        current_question_type = "what"
         for key, value in sentences_dict.items():
             sentence_score_dict[key] += update_score_for_what(value, question_text, question_words,
                                                               tagged_sentence_dict[key], tagged_question,
                                                               word_tokens_dict[key])
 
     elif question_words.__contains__("when"):
+        current_question_type = "when"
         for key, value in sentences_dict.items():
             sentence_score_dict[key] += update_score_for_when(value, question_text, question_words,
                                                               tagged_sentence_dict[key], tagged_question,
                                                               word_tokens_dict[key])
 
     elif question_words.__contains__("where"):
+        current_question_type = "where"
         for key, value in sentences_dict.items():
             sentence_score_dict[key] += update_score_for_where(value, question_text, question_words,
                                                                tagged_sentence_dict[key], tagged_question,
                                                                word_tokens_dict[key])
 
     elif question_words.__contains__("why"):
+        current_question_type = "why"
         sentence_score_dict = update_score_for_why(sentences_dict, sentence_score_dict, question_text, question_words,
                                                    tagged_sentence_dict, tagged_question,
                                                    word_tokens_dict)
 
     # Return single line equivalent of multi-line sentence to concur with the scoring system
-    return get_most_likely_sentence(sentence_score_dict, sentences_dict)
+    return get_most_likely_sentence(sentence_score_dict, sentences_dict, current_question_type, nlp_ner_tagging)
 
 
-def get_most_likely_sentence(sentence_score_dict, sentences_dict):
+def get_most_likely_sentence(sentence_score_dict, sentences_dict, current_question_type, nlp_ner_tagging):
     sorted_sentence_score_dict = {k: v for k, v in
                                   sorted(sentence_score_dict.items(), key=lambda item: item[1], reverse=True)}
 
     # TODO:Need to add tie-breaker logic
 
-    return sentences_dict[list(sorted_sentence_score_dict)[0]].replace("\n", " ")
+    best_sentence = sentences_dict[list(sorted_sentence_score_dict)[0]].replace("\n", " ")
+
+    pos_tagged_best_sentence = pos_tag(word_tokenize(best_sentence))
+    ner_tagged_best_sentence = nlp_ner_tagging(best_sentence)
+
+    # TODO: To improve my checking more pos and ner tags, WHAT
+    if current_question_type == "who":
+        for e in ner_tagged_best_sentence.ents:
+            if e.label_ == "PERSON":
+                best_sentence = e.text
+                break
+    elif current_question_type == "when":
+        for e in ner_tagged_best_sentence.ents:
+            if e.label_ == "DATE" or e.label_ == "TIME":
+                best_sentence = e.text
+                break
+    elif current_question_type == "where":
+        for e in ner_tagged_best_sentence.ents:
+            if e.label_ == "LOC" or e.label_ == "GPE" or e.label_ == "FAC":
+                best_sentence = e.text
+                break
+
+    return best_sentence
 
 
 def get_best_sentences(sentences_dict, sentence_score_dict):
