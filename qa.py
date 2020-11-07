@@ -43,9 +43,9 @@ def get_story_objects(directory_path, input_file_contents):
     temp = []
 
     for i in range(1, len(input_file_contents)):
-        story_file_path = directory_path + "/" + \
+        story_file_path = directory_path + \
                           str(input_file_contents[i]).rstrip() + ".story"
-        question_file_path = directory_path + "/" + \
+        question_file_path = directory_path + \
                              str(input_file_contents[i]).rstrip() + ".questions"
         questions = []
         # Create story
