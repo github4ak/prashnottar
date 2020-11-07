@@ -6,6 +6,7 @@
 
 - Download stopwords set `python3 -m nltk.downloader stopwords`
 - Download names set `python3 -m nltk.downloader names`
+- Download spaCy `pip install -U spacy`
 - Download spaCy's english language model `python3 -m spacy download en_core_web_sm`
 - Download Average perceptron tagger `python3 -m nltk.downloader averaged_perceptron_tagger`
  - Run `python3 qa.py test_input.txt`
