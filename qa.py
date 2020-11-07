@@ -109,7 +109,7 @@ def get_word_score_for_each_sentence(sentences_dict, question_words):
         for word in sentence_words:
             if word.isalpha():
                 clean_sentence_words.append(word.lower())
-        sentence_score_dict[key] = get_word_match_score_for_sentence(clean_sentence_words, question_words)
+        sentence_score_dict[key] = get_word_match_score_for_sentence(word_tokens, clean_sentence_words, question_words)
     return sentence_score_dict
 
 
@@ -158,6 +158,7 @@ def get_answer(sentences_dict, question_text, question_words, tagged_sentence_di
         for key, value in sentences_dict.items():
             sentence_score_dict[key] += update_score_for_who(value, question_text, question_words,
                                                              tagged_sentence_dict[key], tagged_question)
+
     elif question_words.__contains__("what"):
         for key, value in sentences_dict.items():
             sentence_score_dict[key] += update_score_for_what(value, question_text, question_words,
@@ -251,7 +252,7 @@ def update_score_for_when(value, question_text, question_words, tagged_sentence,
 def update_score_for_where(value, question_text, question_words, tagged_sentence, tagged_question, word_tokens):
     score = 0
 
-    pos_tagged_sentence = pos_tag(value)
+    pos_tagged_sentence = pos_tag(word_tokenize(value))
 
     for tagged_word in pos_tagged_sentence:
         if list(tagged_word)[1] == 'P':
@@ -303,8 +304,9 @@ def update_score_for_what(value, question_text, question_words, tagged_sentence,
         score += 20
 
     # Rule 5
-    pos_tagged_question = pos_tag(word_tokens)
-    pos_tagged_sentence = pos_tag(value)
+    pos_tagged_question = pos_tag(word_tokenize(question_text))
+
+    pos_tagged_sentence = pos_tag(word_tokenize(value))
 
     for tagged_words in tagged_question.ents:
         if tagged_words.label_ == "PERSON":
@@ -373,29 +375,24 @@ def get_sentence_tokenized(story_text):
     return sentences_dict
 
 
-def get_word_match_score_for_sentence(clean_sentence_words, question_words):
-    intersection_len = get_intersection_length(clean_sentence_words, question_words)
-    sentence_len = len(clean_sentence_words)
+def get_word_match_score_for_sentence(word_tokens, clean_sentence_words, question_words):
+    score = 0
 
-    if sentence_len == 0:
-        return 0
+    pos_tagged_sentence = pos_tag(word_tokens)
 
-    match_number = intersection_len / sentence_len
+    pos_tagged_dict = {}
 
-    # Scoring range 3,4 and 6
-    if match_number > 0.8:
-        score = 6
-    elif match_number > 0.4:
-        score = 4
-    else:
-        score = 3
+    for tagged_word in pos_tagged_sentence:
+        pos_tagged_dict[list(tagged_word)[0].lower()] = list(tagged_word)[1]
+
+    for word in clean_sentence_words:
+        if word in question_words:
+            if word in pos_tagged_dict.keys() and pos_tagged_dict[word] == 'VBP':
+                score += 1.5
+            else:
+                score += 1
 
     return score
-
-
-def get_intersection_length(clean_sentence_words, question_words):
-    intersection_words = [word for word in clean_sentence_words if word in question_words]
-    return len(intersection_words)
 
 
 def make_perfect_answer(directory_path, input_file_contents):
