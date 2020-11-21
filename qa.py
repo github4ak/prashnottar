@@ -127,7 +127,7 @@ def print_formatted_output(stories):
         # For each story, get tokenized sentence
         sentences_dict = get_sentence_tokenized(story.text)
         # Prepare NER tags for each sentence
-        tagged_sentence_dict = get_sentence_ner(nlp_ner_tagging,sentences_dict)
+        tagged_sentence_dict = get_sentence_ner(nlp_ner_tagging, sentences_dict)
         #  For each sentence in story, get tokenized words
         word_tokens_dict = get_word_tokenize(sentences_dict)
         for q in story.story_questions:
@@ -154,8 +154,7 @@ def print_formatted_output(stories):
 
 def get_answer(sentences_dict, question_text, question_words, tagged_sentence_dict, tagged_question,
                sentence_score_dict, word_tokens_dict, nlp_ner_tagging):
-
-    current_question_type =  ""
+    current_question_type = ""
 
     if question_words.__contains__("who"):
         current_question_type = "who"
@@ -415,14 +414,45 @@ def get_word_match_score_for_sentence(word_tokens, clean_sentence_words, questio
     for tagged_word in pos_tagged_sentence:
         pos_tagged_dict[list(tagged_word)[0].lower()] = list(tagged_word)[1]
 
-    for word in clean_sentence_words:
-        if word in question_words:
-            if word in pos_tagged_dict.keys() and pos_tagged_dict[word] == 'VBP':
-                score += 1.5
-            else:
-                score += 1
+    clean_question_words = []
+    for word in question_words:
+        if word.isalpha():
+            clean_question_words.append(word.lower())
 
-    return score
+    stop_words_english = stopwords.words('english')
+
+    sentence_set = {w for w in clean_sentence_words if not w in stop_words_english}
+    question_set = {w for w in clean_question_words if not w in stop_words_english}
+
+    sentence_vector = []
+    question_vector = []
+    result_vector = sentence_set.union(question_set)
+    for w in result_vector:
+        if w in sentence_set:
+            sentence_vector.append(1)
+        else:
+            sentence_vector.append(0)
+        if w in question_set:
+            question_vector.append(1)
+        else:
+            question_vector.append(0)
+
+    c = 0
+    for i in range(len(result_vector)):
+        c += sentence_vector[i] * question_vector[i]
+    if float((sum(sentence_vector) * sum(question_vector)) ** 0.5) > 0:
+        cosine_sim = c / float((sum(sentence_vector) * sum(question_vector)) ** 0.5)
+    else:
+        cosine_sim = 0
+
+    for word in clean_sentence_words:
+        if word in clean_question_words:
+            if word in pos_tagged_dict.keys() and pos_tagged_dict[word] == 'VBP':
+                # Increase weight when an verb phrase match occurs
+                score += 5
+
+    # Multiply by cosine_sim by a factor of x to represent word matches on an average
+    return score + cosine_sim * 100
 
 
 def make_perfect_answer(directory_path, input_file_contents):
