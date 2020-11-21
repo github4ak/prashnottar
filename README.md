@@ -17,4 +17,4 @@
  - Run the scoring program (from the scoring_program folder)
     - `perl score-answers.pl my_custom_list.response my_custom_list.answers`
 
-*We got an average f-measure of 0.1379 with our initial sentence-question word matching algorithm.*
+*We got an average f-measure of 0.3141 for our mid-point evaluation.*
