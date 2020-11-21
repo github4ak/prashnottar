@@ -189,11 +189,20 @@ def get_answer(sentences_dict, question_text, question_words, tagged_sentence_di
                                                    tagged_sentence_dict, tagged_question,
                                                    word_tokens_dict)
 
+    elif question_words.__contains__("how"):
+        current_question_type = "how"
+        for key, value in sentences_dict.items():
+            sentence_score_dict[key] += update_score_for_how(value, question_text, question_words,
+                                                             tagged_sentence_dict[key], tagged_question,
+                                                             word_tokens_dict[key])
+
     # Return single line equivalent of multi-line sentence to concur with the scoring system
-    return get_most_likely_sentence(sentence_score_dict, sentences_dict, current_question_type, nlp_ner_tagging)
+    return get_most_likely_sentence(question_words, sentence_score_dict, sentences_dict, current_question_type,
+                                    nlp_ner_tagging)
 
 
-def get_most_likely_sentence(sentence_score_dict, sentences_dict, current_question_type, nlp_ner_tagging):
+def get_most_likely_sentence(question_words, sentence_score_dict, sentences_dict, current_question_type,
+                             nlp_ner_tagging):
     sorted_sentence_score_dict = {k: v for k, v in
                                   sorted(sentence_score_dict.items(), key=lambda item: item[1], reverse=True)}
 
@@ -205,23 +214,66 @@ def get_most_likely_sentence(sentence_score_dict, sentences_dict, current_questi
     ner_tagged_best_sentence = nlp_ner_tagging(best_sentence)
 
     # TODO: To improve my checking more pos and ner tags, WHAT
+    best_extracted_sentence = ""
     if current_question_type == "who":
         for e in ner_tagged_best_sentence.ents:
             if e.label_ == "PERSON":
-                best_sentence = e.text
-                break
+                best_extracted_sentence += e.text + " "
+
+    elif current_question_type == "what":
+        # To do something
+        best_extracted_sentence = ""
+
+    elif current_question_type == "why":
+        # To do something
+        best_extracted_sentence = ""
+
     elif current_question_type == "when":
         for e in ner_tagged_best_sentence.ents:
             if e.label_ == "DATE" or e.label_ == "TIME":
-                best_sentence = e.text
-                break
+                best_extracted_sentence += e.text + " "
+
     elif current_question_type == "where":
         for e in ner_tagged_best_sentence.ents:
-            if e.label_ == "LOC" or e.label_ == "GPE" or e.label_ == "FAC":
-                best_sentence = e.text
-                break
+            if e.label_ == "LOC" or e.label_ == "GPE" or e.label_ == "FAC" or e.label_ == "EVENT":
+                best_extracted_sentence += e.text + " "
 
-    return best_sentence
+    elif current_question_type == "how":
+        if question_words.__contains__("much"):
+            for e in ner_tagged_best_sentence.ents:
+                if e.label_ == "PERCENT" or e.label_ == "MONEY" or e.label_ == "ORDINAL":
+                    best_extracted_sentence += e.text + " "
+
+        if question_words.__contains__("many"):
+            for e in ner_tagged_best_sentence.ents:
+                if e.label_ == "QUANTITY" or e.label_ == "ORDINAL" or e.label_ == "CARDINAL":
+                    best_extracted_sentence += e.text + " "
+
+        if question_words.__contains__("old") or question_words.__contains__("often"):
+            for e in ner_tagged_best_sentence.ents:
+                if e.label_ == "DATE":
+                    best_extracted_sentence += e.text + " "
+
+        if question_words.__contains__("tall") or question_words.__contains__("large") or question_words.__contains__(
+                "high") or question_words.__contains__("deep"):
+            for e in ner_tagged_best_sentence.ents:
+                if e.label_ == "QUANTITY":
+                    best_extracted_sentence += e.text + " "
+
+        if question_words.__contains__("long"):
+            for e in ner_tagged_best_sentence.ents:
+                if e.label_ == "QUANTITY" or e.label_ == "DATE" or e.label_ == "TIME":
+                    best_extracted_sentence += e.text + " "
+
+        if question_words.__contains__("far"):
+            for e in ner_tagged_best_sentence.ents:
+                if e.label_ == "QUANTITY" or e.label_ == "TIME":
+                    best_extracted_sentence += e.text + " "
+
+    if best_extracted_sentence != "":
+        return best_extracted_sentence
+    else:
+        return best_sentence
 
 
 def get_best_sentences(sentences_dict, sentence_score_dict):
@@ -257,6 +309,42 @@ def update_score_for_why(sentences_dict, sentence_score_dict, question_text, que
             sentence_score_dict[key] += 4
 
     return sentence_score_dict
+
+
+def update_score_for_how(value, question_text, question_words, tagged_sentence, tagged_question, word_tokens):
+    score = 0
+
+    tagged_word_label_list = []
+
+    for tagged_words in tagged_sentence.ents:
+        tagged_word_label_list.append(tagged_words.label_)
+
+    if question_words.__contains__("much"):
+        if "PERCENT" or "MONEY" or "ORDINAL" in tagged_word_label_list:
+            score += 10
+
+    if question_words.__contains__("many"):
+        if "QUANTITY" or "ORDINAL" or "CARDINAL" in tagged_word_label_list:
+            score += 10
+
+    if question_words.__contains__("old") or question_words.__contains__("often"):
+        if "DATE" in tagged_word_label_list:
+            score += 10
+
+    if question_words.__contains__("tall") or question_words.__contains__("large") or question_words.__contains__(
+            "high") or question_words.__contains__("deep"):
+        if "QUANTITY" in tagged_word_label_list:
+            score += 10
+
+    if question_words.__contains__("long"):
+        if "QUANTITY" or "DATE" or "TIME" in tagged_word_label_list:
+            score += 10
+
+    if question_words.__contains__("far"):
+        if "QUANTITY" or "TIME" in tagged_word_label_list:
+            score += 10
+
+    return score
 
 
 def update_score_for_when(value, question_text, question_words, tagged_sentence, tagged_question, word_tokens):
