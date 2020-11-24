@@ -218,7 +218,7 @@ def get_most_likely_sentence(question_words, sentence_score_dict, sentences_dict
 
     if current_question_type == "who":
         for e in ner_tagged_best_sentence.ents:
-            if e.label_ == "PERSON":
+            if e.label_ == "PERSON" or e.label_ == "NORP" or e.label_ == "ORG":
                 best_extracted_sentence += e.text + " "
 
     elif current_question_type == "what":
@@ -234,7 +234,7 @@ def get_most_likely_sentence(question_words, sentence_score_dict, sentences_dict
 
     elif current_question_type == "where":
         for e in ner_tagged_best_sentence.ents:
-            if e.label_ == "LOC" or e.label_ == "GPE" or e.label_ == "FAC" or e.label_ == "EVENT" or e.label_ == "NORP":
+            if e.label_ == "PRODUCT" or e.label_ == "WORK_OF_ART" or e.label_ == "ORG" or e.label_ == "LOC" or e.label_ == "GPE" or e.label_ == "FAC" or e.label_ == "EVENT" or e.label_ == "NORP":
                 best_extracted_sentence += e.text + " "
 
     elif current_question_type == "how":
