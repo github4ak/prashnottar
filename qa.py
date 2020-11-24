@@ -215,17 +215,16 @@ def get_most_likely_sentence(question_words, sentence_score_dict, sentences_dict
 
     # TODO: To improve my checking more pos and ner tags, WHAT
     best_extracted_sentence = ""
+
     if current_question_type == "who":
         for e in ner_tagged_best_sentence.ents:
             if e.label_ == "PERSON":
                 best_extracted_sentence += e.text + " "
 
     elif current_question_type == "what":
-        # To do something
         best_extracted_sentence = ""
 
     elif current_question_type == "why":
-        # To do something
         best_extracted_sentence = ""
 
     elif current_question_type == "when":
@@ -235,7 +234,7 @@ def get_most_likely_sentence(question_words, sentence_score_dict, sentences_dict
 
     elif current_question_type == "where":
         for e in ner_tagged_best_sentence.ents:
-            if e.label_ == "LOC" or e.label_ == "GPE" or e.label_ == "FAC" or e.label_ == "EVENT":
+            if e.label_ == "LOC" or e.label_ == "GPE" or e.label_ == "FAC" or e.label_ == "EVENT" or e.label_ == "NORP":
                 best_extracted_sentence += e.text + " "
 
     elif current_question_type == "how":
