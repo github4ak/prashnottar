@@ -1,6 +1,16 @@
 # prashnottar
 
-Moved from Windows (Visual Studio) to Ubuntu (PyCharm), as working with spaCy and NLTK packages in Windows was getting difficult.
+CS-6340 Natural Language Processing project
+
+Term: Fall, 2020
+
+Authors
+* [Abishek Krishnan](https://github.com/github4ak)
+* [Monesha Murdeshwar](https://github.com/moneshamurdeshwar)
+
+A Question-Answering system using NLP techniques.
+
+Prashnottar(प्रश्नोत्तर): A hindi word which means "question and answer".
 
 Steps to setup the project locally,
 
