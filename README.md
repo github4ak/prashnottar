@@ -11,7 +11,7 @@ Steps to setup the project locally,
 - Download spaCy's english language model `python3 -m spacy download en_core_web_sm`
 - Download Average perceptron tagger `python3 -m nltk.downloader averaged_perceptron_tagger`
 - Download Punkt `python3 -m nltk.downloader punkt`
-- Change the first line of test_input.txt to match your file path to developset-v2 folder
+- Change the first line of test_input.txt to match your file path to test (e.g. developset-v2) folder
 
 Steps to run the project locally,
 
