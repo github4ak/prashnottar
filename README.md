@@ -17,4 +17,4 @@
  - Run the scoring program (from the scoring_program folder)
     - `perl score-answers.pl my_custom_list.response my_custom_list.answers`
 
-*We got an average f-measure of 0.3141 for our mid-point evaluation.*
+*We got an average f-measure of 0.3141 for our mid-point evaluation and 0.425 for our final evaluation*
