@@ -23,4 +23,4 @@ Steps to run the project locally,
 
 Our results,
 
-*We got an average f-measure of 0.3141 for our mid-point evaluation (on testset-2) and 0.425 for our final evaluation.*
+*We got an average f-measure of 0.3141 for our mid-point evaluation (on testset1) and 0.425 for our final evaluation.*
