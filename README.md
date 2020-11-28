@@ -12,29 +12,34 @@ Overview
 --------
 Prashnottar(प्रश्नोत्तर): A hindi word which means "question and answer".
 
-We have tried to build a Question-Answering system using NLP techniques, which are mostly based on [Quarc](https://www.cs.utah.edu/~riloff/pdfs/quarc.pdf) paper.
+We have built a Question-Answering system for reading compreshension tasks using NLP techniques, which are mostly based on the [Quarc](https://www.cs.utah.edu/~riloff/pdfs/quarc.pdf) paper.
 
 Setup steps
 ----------
-- Download stopwords set `python3 -m nltk.downloader stopwords`
-- Download names set `python3 -m nltk.downloader names`
-- If needed, upgrade pip3 `pip3 install --upgrade pip`
-- Download spaCy `pip3 install -U spacy`
-- Download spaCy's english language model `python3 -m spacy download en_core_web_sm`
-- Download Average perceptron tagger `python3 -m nltk.downloader averaged_perceptron_tagger`
-- Download Punkt `python3 -m nltk.downloader punkt`
+- Download stopwords set <br/>
+`$ python3 -m nltk.downloader stopwords`
+- Download names set <br/>
+`$ python3 -m nltk.downloader names`
+- If needed, upgrade pip3 <br/>
+`$ pip3 install --upgrade pip`
+- Download spaCy <br/>
+`$ pip3 install -U spacy`
+- Download spaCy's english language model <br/>
+`$ python3 -m spacy download en_core_web_sm`
+- Download Average perceptron tagger <br/>
+`$ python3 -m nltk.downloader averaged_perceptron_tagger`
+- Download Punkt <br/>
+`$ python3 -m nltk.downloader punkt`
 - Change the first line of test_input.txt to match your file path to test (e.g. developset-v2) folder
 
 Run steps
 ---------
-Steps to run the project locally,
-
- - Run `python3 qa.py test_input.txt`
+- Run `$ python3 qa.py test_input.txt`
     - Generates two files, 'my_custom_list.response' and 'my_custom_list.answers' in the scoring_program folder
 
- - Run the scoring program (from the scoring_program folder)
-    - `perl score-answers.pl my_custom_list.response my_custom_list.answers`
+- Run the scoring program (from the scoring_program folder)
+    - `$ perl score-answers.pl my_custom_list.response my_custom_list.answers`
 
 Results
 -------
-*We got an average f-measure of 0.3141 for our mid-point evaluation (on testset1) and 0.425 for our final evaluation.*
+*We got an average f-measure of 0.3141 on our mid-point evaluation (on testset1) and 0.425 on our final evaluation.*
