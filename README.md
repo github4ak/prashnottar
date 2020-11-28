@@ -18,18 +18,25 @@ Setup steps
 ----------
 - Download stopwords set <br/>
 `$ python3 -m nltk.downloader stopwords`
+
 - Download names set <br/>
 `$ python3 -m nltk.downloader names`
+
 - If needed, upgrade pip3 <br/>
 `$ pip3 install --upgrade pip`
+
 - Download spaCy <br/>
 `$ pip3 install -U spacy`
+
 - Download spaCy's english language model <br/>
 `$ python3 -m spacy download en_core_web_sm`
+
 - Download Average perceptron tagger <br/>
 `$ python3 -m nltk.downloader averaged_perceptron_tagger`
+
 - Download Punkt <br/>
 `$ python3 -m nltk.downloader punkt`
+
 - Change the first line of test_input.txt to match your file path to test (e.g. developset-v2) folder
 
 Run steps
