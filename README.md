@@ -8,12 +8,14 @@ Authors
 * [Abishek Krishnan](https://github.com/github4ak)
 * [Monesha Murdeshwar](https://github.com/moneshamurdeshwar)
 
-A Question-Answering system using NLP techniques.
-
+Overview
+--------
 Prashnottar(प्रश्नोत्तर): A hindi word which means "question and answer".
 
-Steps to setup the project locally,
+We have tried to build a Question-Answering system using NLP techniques, which are mostly based on [Quarc](https://www.cs.utah.edu/~riloff/pdfs/quarc.pdf) paper.
 
+Setup steps
+----------
 - Download stopwords set `python3 -m nltk.downloader stopwords`
 - Download names set `python3 -m nltk.downloader names`
 - If needed, upgrade pip3 `pip3 install --upgrade pip`
@@ -23,6 +25,8 @@ Steps to setup the project locally,
 - Download Punkt `python3 -m nltk.downloader punkt`
 - Change the first line of test_input.txt to match your file path to test (e.g. developset-v2) folder
 
+Run steps
+---------
 Steps to run the project locally,
 
  - Run `python3 qa.py test_input.txt`
@@ -31,6 +35,6 @@ Steps to run the project locally,
  - Run the scoring program (from the scoring_program folder)
     - `perl score-answers.pl my_custom_list.response my_custom_list.answers`
 
-Our results,
-
+Results
+-------
 *We got an average f-measure of 0.3141 for our mid-point evaluation (on testset1) and 0.425 for our final evaluation.*
