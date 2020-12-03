@@ -1,21 +1,13 @@
 # prashnottar
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+[![version](https://img.shields.io/badge/version-1.0-yellow.svg)](https://semver.org)
 
-CS-6340 Natural Language Processing project
-
-Term: Fall, 2020
-
-Authors
-* [Abishek Krishnan](https://github.com/github4ak)
-* [Monesha Murdeshwar](https://github.com/moneshamurdeshwar)
-
-Overview
---------
+## Overview
 Prashnottar(प्रश्नोत्तर): A hindi word which means "question and answer".
 
-We have built a Question-Answering system for reading compreshension tasks using NLP techniques, which are mostly based on the [Quarc](https://www.cs.utah.edu/~riloff/pdfs/quarc.pdf) paper.
+We have built a Question-Answering system for reading compreshension tasks using NLP techniques, which are mostly based on the [Quarc](https://www.cs.utah.edu/~riloff/pdfs/quarc.pdf) paper. It was submitted as part of [University of Utah](https://www.cs.utah.edu/)'s Fall 2020 edition of CS-6340 Natural Language Processing class project.
 
-Setup steps
-----------
+## Setup steps
 - Download stopwords set <br/>
 `$ python3 -m nltk.downloader stopwords`
 
@@ -39,17 +31,14 @@ Setup steps
 
 - Change the first line of test_input.txt to match your file path to test (e.g. developset-v2) folder
 
-Run steps
----------
+## Run steps
 - Run `$ python3 qa.py test_input.txt`
     - Generates two files, 'my_custom_list.response' and 'my_custom_list.answers' in the scoring_program folder
 
 - Run the scoring program (from the scoring_program folder)
     - `$ perl score-answers.pl my_custom_list.response my_custom_list.answers`
 
-Example
--------
-
+## Example
 Given a story, for e.g.
 ```
 A new Canadian radar satellite sees too much, too clearly, according to
@@ -109,6 +98,9 @@ Prashnottar's answer: Hugues Gilbert the Canadian Space  Agency
 ```
 
 
-Results
--------
+## Results
 *We got an average f-measure of 0.3141 on our mid-point evaluation (on testset1) and 0.425 on our final evaluation.*
+
+## Authors
+* [Abishek Krishnan](https://github.com/github4ak)
+* [Monesha Murdeshwar](https://github.com/moneshamurdeshwar)
